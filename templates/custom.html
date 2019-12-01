@@ -20,10 +20,12 @@
     </script>
 </head>
 <body>
+
 <script>
     $(document).ready(function () {
         var $buyTable = $('#buyTable').dataTable();
         var $sellTable = $('#sellTable').dataTable();
+        var $detailTable = $('#detailTable').dataTable();
     });
 </script>
 
@@ -66,15 +68,13 @@
     </div>
 
     <div class="row">
-        <div class="col">
+        <div class="col-3">
             <table id="buyTable" class="display">
                 <thead>
                 <tr>
                     <th>代號</th>
                     <th>股名</th>
-                    <th>外資買超</th>
-                    <th>投信買超</th>
-                    <th>合計</th>
+                    <th>次數</th>
                 </tr>
                 </thead>
 
@@ -90,20 +90,42 @@
             </table>
         </div>
 
-        <div class="col">
+        <div class="col-3">
             <table id="sellTable" class="display">
                 <thead>
                 <tr>
                     <th>代號</th>
                     <th>股名</th>
-                    <th>外資賣超</th>
-                    <th>投信賣超</th>
-                    <th>合計</th>
+                    <th>次數</th>
                 </tr>
                 </thead>
 
                 <tbody>
                 {% for foo in sell %}
+                    <tr>
+                        {% for i in foo %}
+                            <td>{{ i }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-6">
+            <table id="detailTable" class="display">
+                <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>編號</th>
+                    <th>名稱</th>
+                    <th>外資</th>
+                    <th>投信</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for foo in detail %}
                     <tr>
                         {% for i in foo %}
                             <td>{{ i }}</td>

@@ -5,7 +5,9 @@ from django.db import models
 class StockRecord(models.Model):
     datetime = models.DateTimeField()
 
-    number = models.IntegerField()
+    number = models.CharField(
+        max_length=20
+    )
 
     name = models.CharField(
         max_length=20
