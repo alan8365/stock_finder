@@ -11,15 +11,16 @@ def index(request):
         sql = '''
             SELECT fi.number, fi.name, ff.diff, fi.diff, fi.diff + ff.diff
             FROM finder_investment as fi
-                     INNER JOIN finder_foreign ff ON fi.number = ff.number
-            WHERE fi.number IN
-                  (SELECT number
+                     INNER JOIN finder_foreign ff ON fi.number = ff.number AND fi.datetime = ff.datetime
+            
+            WHERE ff.id IN
+                  (SELECT id
                    FROM finder_foreign
                    WHERE diff > 0
                      AND datetime =
-                         (SELECT max(datetime) FROM finder_foreign)
-                   INTERSECT
-                   SELECT number
+                         (SELECT max(datetime) FROM finder_foreign))
+              AND fi.id in
+                  (SELECT id
                    FROM finder_investment
                    WHERE diff > 0
                      AND datetime =
@@ -32,15 +33,16 @@ def index(request):
         sql = '''
             SELECT fi.number, fi.name, ff.diff, fi.diff, fi.diff + ff.diff
             FROM finder_investment as fi
-                     INNER JOIN finder_foreign ff ON fi.number = ff.number
-            WHERE fi.number IN
-                  (SELECT number
+                     INNER JOIN finder_foreign ff ON fi.number = ff.number AND fi.datetime = ff.datetime
+            
+            WHERE ff.id IN
+                  (SELECT id
                    FROM finder_foreign
                    WHERE diff < 0
                      AND datetime =
-                         (SELECT max(datetime) FROM finder_foreign)
-                   INTERSECT
-                   SELECT number
+                         (SELECT max(datetime) FROM finder_foreign))
+              AND fi.id in
+                  (SELECT id
                    FROM finder_investment
                    WHERE diff < 0
                      AND datetime =
