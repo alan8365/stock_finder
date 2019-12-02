@@ -30,11 +30,12 @@ class WearnSpider(scrapy.Spider):
 
     def parse(self, response):
         title = response.css('.stockfundthree > h3::text').get()
-        day = re.search(r'\d+', title).group()
+        day = int(re.search(r'\d+', title).group())
 
         today = datetime.today()  # + timedelta(hours=8)
 
         if not today.day == day:
+            print('day error')
             return
 
         page_name = response.url.split(r'/')[-1]
@@ -71,8 +72,8 @@ class WearnSpider(scrapy.Spider):
         conn.commit()
         conn.close()
 
-        # with open(f'csv/{day}_{page_name}.csv', 'w', newline='', encoding='UTF-8') as f:
-        #     writer = csv.writer(f)
-        #     writer.writerow(data.keys())
-        #     for i in a:
-        #         writer.writerow(i)
+        with open(f'csv/{day}_{page_name}.csv', 'w', newline='', encoding='UTF-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(data.keys())
+            for i in a:
+                writer.writerow(i)
