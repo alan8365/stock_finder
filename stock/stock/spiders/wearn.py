@@ -5,6 +5,9 @@ import re
 import csv
 import scrapy
 import sqlite3
+import psycopg2
+
+DATABASE_URL = 'postgres://plkrpgvahxvvko:f06c3423496c41a704b193effc37298fc891dbb2ae4944478d26d063ece73ae0@ec2-50-17-231-192.compute-1.amazonaws.com:5432/dail56rnv3mqlr'
 
 
 class WearnSpider(scrapy.Spider):
@@ -29,22 +32,36 @@ class WearnSpider(scrapy.Spider):
             )
 
     def parse(self, response):
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        c = conn.cursor()
+
         title = response.css('.stockfundthree > h3::text').get()
         day = int(re.search(r'\d+', title).group())
 
-        today = datetime.today()  # + timedelta(hours=8)
+        page_name = response.url.split(r'/')[-1]
+        table_name = 'finder_foreign' if page_name == 'a50.asp' else 'finder_investment'
 
-        if not today.day == day:
+        c.execute(f'SELECT max(datetime) FROM {table_name}')
+        last_day, = c.fetchone()
+
+        if not last_day:
+            last_day = datetime.strptime('2019-01-01', '%Y-%m-%d')
+            # last_day = datetime.strptime(last_day, '%Y-%m-%d %H:%M:%S')
+
+        if last_day.day == day:
+            print('day exist.')
+            return
+
+        trans_day = datetime.strptime(response.headers['Date'].decode(), '%a, %d %b %Y %H:%M:%S %Z')
+        trans_day -= timedelta(hours=trans_day.hour,
+                               minutes=trans_day.minute,
+                               seconds=trans_day.second)
+
+        if trans_day.day != day:
             print('day error')
             return
 
-        page_name = response.url.split(r'/')[-1]
         all_row = response.css('.stockfundthreecon tr')
-
-        today -= timedelta(hours=today.hour,
-                           minutes=today.minute,
-                           seconds=today.second,
-                           microseconds=today.microsecond)
 
         data = {
             'number': all_row.xpath('td[2]/text()').getall(),
@@ -54,18 +71,11 @@ class WearnSpider(scrapy.Spider):
             'diff': all_row.xpath('td[6]/text()').getall()
         }
 
-        table_name = 'finder_foreign' if page_name == 'a50.asp' else 'finder_investment'
         a = set(zip(*data.values()))
-        a = [(today,) + i for i in a]
-
-        conn = sqlite3.connect(
-            '../../db.sqlite3',
-            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
-        )
-        c = conn.cursor()
+        a = [(trans_day,) + i for i in a]
 
         c.executemany(
-            f'INSERT INTO {table_name} (datetime, number, name, buy, sell, diff) VALUES (?,?,?,?,?,?)',
+            f'INSERT INTO {table_name} (datetime, number, name, buy, sell, diff) VALUES (%s,%s,%s,%s,%s,%s)',
             a
         )
 
