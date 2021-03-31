@@ -18,7 +18,7 @@ incremental==17.5.0
 ipython==7.10.0
 ipython-genutils==0.2.0
 jedi==0.15.1
-lxml==4.4.2
+lxml==4.6.3
 parsel==1.5.2
 parso==0.5.1
 pickleshare==0.7.5
